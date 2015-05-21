@@ -1,0 +1,16 @@
+---
+# This will install Pagespeed from source
+
+- name: "Create /usr/local/nginx/modules"
+  file: path="/usr/local/nginx/modules" mode=775 owner=root group=root state=directory
+
+- name: "Copy Pagespeed zip file and unpack"
+  unarchive: src="ngx_pagespeed-release-{{ pagespeed_version }}.zip" dest="/usr/local/nginx/modules/" copy=yes
+
+- name: "Copy PSOL tar file and unpack"
+  unarchive: src="psol-{{ psol_version }}.tar.gz" dest="/usr/local/nginx/modules/ngx_pagespeed-release-{{ pagespeed_version }}/" copy=yes
+
+- name: "Make Pagespeed cache directory"
+  file: path="/var/ngx_pagespeed_cache" mode=775 owner=nginx group=nginx state=directory
+
+

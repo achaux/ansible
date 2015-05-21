@@ -1,0 +1,25 @@
+---
+# Variables listed here are applicable to the nginx_insall group
+
+# Software version numbers
+modsecurity_version: 2.9.0
+nginx_version: 1.6.2
+pagespeed_version: 1.9.32.3-beta
+php_version: 5.3.29
+psol_version: 1.9.32.2
+
+# Nginx specific variables
+default_server_name: '"" www.example.com'
+document_root: "/some/path"
+access_log: "/var/log/nginx/access.log prod-web"
+error_log: "/var/log/nginx/error.log warn"
+ssl_access_log: "/var/log/nginx/ssl_access.log prod-web"
+ssl_error_log: "/var/log/nginx/ssl_error.log error"
+modsecurity_status: "off"
+pagespeed_status: "on"
+pagespeed_cache_path: "/dev/shm"
+worker_connections: 1024
+worker_cpu_affinity: "0000000000000001 0000000000000010 0000000000000100 0000000000001000 0000000000010000 0000000000100000 0000000001000000 0000000010000000 0000000100000000 0000001000000000 0000010000000000 0000100000000000 0001000000000000 0010000000000000 0100000000000000 1000000000000000"
+worker_processes: 16
+worker_rlimit_nofile: 100000
+

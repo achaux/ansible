@@ -1,0 +1,3 @@
+---
+- include: update_newrelic_daemon.yml
+- include: update_newrelic_PHP_agent.yml

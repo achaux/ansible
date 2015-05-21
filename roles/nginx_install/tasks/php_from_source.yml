@@ -1,0 +1,18 @@
+---
+# This will install PHP from source
+
+- name: "Create /var/run/php-fpm"
+  file: path="/var/run/php-fpm" mode=755 owner=root group=root state=directory
+
+- name: "Copy PHP tar file and unpack"
+  unarchive: src="php-{{ php_version }}.tar.gz" dest="/usr/local/" copy=yes
+
+- name: "Copy PHP configuration script"
+  copy: src="_PHP_configure.sh" dest="/usr/local/php-{{ php_version }}/" mode="0744"
+
+- name: "Run PHP configuration script"
+  shell: "cd /usr/local/php-{{ php_version }}/ ; ./_PHP_configure.sh ; make && make install"
+
+- name: "Link libraries"
+  file: src="/usr/lib64/php/modules" dest="/usr/lib64/20090626" owner=root group=root state=link
+

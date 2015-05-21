@@ -1,0 +1,19 @@
+---
+# This will install ModSecurity from source
+
+- name: "Create /usr/local/nginx/modules"
+  file: path="/usr/local/nginx/modules" mode=775 owner=root group=root state=directory
+
+- name: "Copy Modsecurity gz file and unpack: modsecurity-{{ modsecurity_version }}.tar.gz"
+  unarchive: src="modsecurity-{{ modsecurity_version }}.tar.gz" dest="/usr/local/nginx/modules/" copy=yes
+
+- name: "Configure Modsecurity"
+  shell: "cd /usr/local/nginx/modules/modsecurity-{{ modsecurity_version }}/ ; ./configure --enable-standalone-module --with-apxs=/usr/sbin/apxs --disable-mlogc ; make && make install"
+
+- name: "Copy Modsecurity configuration file"
+  copy: src="nginx/modsecurity.conf" dest="/etc/nginx/modsecurity.conf" mode="0644"
+
+- name: "Copy Modsecurity unicode mapping file"
+  copy: src="nginx/unicode.mapping" dest="/etc/nginx/unicode.mapping" mode="0644"
+
+

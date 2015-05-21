@@ -1,0 +1,141 @@
+# For more information on configuration, see:
+#   * Official English Documentation: http://nginx.org/en/docs/
+#   * Official Russian Documentation: http://nginx.org/ru/docs/
+
+# Define user account of worker processes
+user  nginx nginx;
+
+# Define amount of worker processes
+# Recommended to set to number of CPU cores
+worker_processes {{ worker_processes }};
+
+# Define amount of files a worker process may use simultaneously.
+#worker_rlimit_nofile 8192;
+# TEST: BUMP FROM 8192 TO OLD PRODUCTION VALUE OF 100000
+worker_rlimit_nofile {{ worker_rlimit_nofile }};
+
+# Define priority of worker process, -20 highest, 19 lowest.
+# Note: kernel processus run at priority level -5
+# Do not set to -5 or lower
+worker_priority 0;
+
+# Affect worker processes to CPU cores.
+# One series of digits per worker_processes
+# One digit in a series per CPU core.
+# worker_cpu_affinity {{ worker_cpu_affinity }};
+
+error_log  {{ error_log }};
+
+pid /var/run/nginx.pid;
+
+########################################################
+#  events block used to configure network mechanisms.  #
+########################################################
+events {
+    # Total number of connections the server can handle is calculated
+    # by multiplying worker_connections X worker processes;
+    # 1024 X 4 = 4096 connections
+    # 1024 X 16 = 16384 connections
+    worker_connections {{ worker_connections }};
+
+    # Define whether all incoming connections should be accepted at once
+    multi_accept off;
+
+    # Select event module among available ones.
+    # epoll is efficient for Linux 2.6+
+    use epoll;
+}
+
+########################################################
+#      http block used to configure web servers.       #
+########################################################
+http {
+    include       /etc/nginx/mime.types;
+    default_type  application/octet-stream;
+
+    # Log file not found (404) to log file.
+    log_not_found on;
+ 
+    # Set VPC subnet as trusted
+    # 10.30.30.2 = F5; 10.30.30.25 = dtvarnish2;
+    set_real_ip_from 10.30.0.0/16;
+
+    # Look for client IP in the X-Forwarded-For header
+    real_ip_header X-Forwarded-For;
+ 
+    # on = Replace trusted addresses with last NON-TRUSTED address sent in real_ip_header.
+    # off = Replace trusted addresses with last address sent in real_ip_header.
+    real_ip_recursive on;
+    
+    # Define upstream server for php-fpm
+    # To ensure that requests from a same visitor always get processed by the same backend
+    # enable the ip_hash option
+    upstream phpfpm {
+        server 127.0.0.1:9000;
+    }
+
+    # Customized log_format to include servername - good for centralized logging.
+    log_format  prod-web  '[$time_local]  "$http_x_forwarded_for"  "$server_name"  "$request" '
+                      '$status $body_bytes_sent "$http_referer" '
+                      '"$http_user_agent" "$remote_addr"';
+
+    access_log  {{ access_log }};
+
+    # Turn sendfile() off.  sendfile uses kernel calls to copy files
+    # directly from disc to tcp.  On certain VMs, this can be unreliable
+    # resulting in corrupted files on NFS mounted directories.
+    sendfile off;
+
+    # Enable or disable TCP_CORK Linux socket option.  Only applies if
+    # sendfile is enabled.
+    tcp_nopush off;
+
+    #keepalive_timeout  0;
+    keepalive_timeout  65;
+
+    # Configure Gzip compression.  Never use on images or binary files
+    gzip on;
+    gzip_min_length 16;
+    gzip_comp_level 4;
+    gzip_types text/plain text/css application/json application/javascript application/x-javascript text/xml application/xml application/xml+rss text/javascript;
+    gzip_vary on;
+
+    # Maximum size of the client request body.  If exceeded, it will result in a
+    # 413 Request entity too large HTTP error
+    client_max_body_size 256M;
+
+    # Turn pagespeed on.  pagespeed needs to be configure for a location, so
+    # further configuration needed in default.conf, etc.
+    pagespeed {{ pagespeed_status }};
+    # Needs to exist and be writable by nginx.  Use tmpfs for best performance.
+    pagespeed FileCachePath {{ pagespeed_cache_path }};
+    pagespeed EnableFilters combine_css,combine_javascript;
+    pagespeed PreserveUrlRelativity on;
+
+    error_page 501 502 505 /500.html;
+    error_page 500 /500.html;
+    error_page 503 /503.html;
+    error_page 504 /504.html;
+    error_page 400 /400.html;
+    error_page 401 /401.html;
+    error_page 403 /403.html;
+    error_page 404 /404.html;
+
+    index index.php index.html index.htm;
+
+    # Load modular configuration files from the /etc/nginx/conf.d directory.
+    # See http://nginx.org/en/docs/ngx_core_module.html#include
+    # for more information.
+    include /etc/nginx/conf.d/*.conf;
+
+    # New relic stub - requires licenser per host
+    server {
+        listen 127.0.0.1:8080; #IPv4
+        server_name 127.0.0.1;
+        location /nginx_stub_status {
+            stub_status on;
+            allow 127.0.0.1;
+            deny all;
+        }
+    }
+}

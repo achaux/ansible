@@ -1,0 +1,32 @@
+---
+
+# Restart Apache.
+- name: "restart apache"
+  service: name=httpd state=restarted
+
+# Restart Nginx.
+- name: "restart nginx"
+  service: name=nginx state=restarted
+  service: name=php-fpm state=restarted
+
+# Update rkhunter's data file of stored values with the current values.
+- name: "update rkhunter_propupd"
+  command: /usr/bin/rkhunter --propupd
+  sudo: yes
+  ignore_errors: yes
+  
+# Reboot server
+- name: "reboot server"
+  command: '/sbin/reboot'
+  notify: wait for reboot
+
+# Wait for server to reboot
+- name: "wait for reboot"
+  local_action: wait_for host={{ inventory_hostname }} 
+                state=started
+                port=22
+                delay=15
+                timeout=300
+                connect_timeout=15
+  sudo: false
+

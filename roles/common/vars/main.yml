@@ -1,0 +1,3 @@
+---
+ntp_server: domcolo2.example.com
+database_server: prod-mysql2.example.com

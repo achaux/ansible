@@ -1,0 +1,52 @@
+#
+# The port 80 web server
+#
+ server {
+    # Define what to listen to.  This is set up to listen to ANY IP address
+    # defined on the server using port 80.
+    # default_server means exactly that.
+    listen 80 default_server;
+
+    # The underscore _ is a catch all for any server name
+    # not specifically defined in a .conf file
+    # Since we set the default to listen to port 80, no need to specify server_name
+    server_name {{ default_server_name }};
+
+    # Define document root
+    root {{ document_root }};
+
+    # Define upstream server for PHP
+    location ~ \.php$ {
+        fastcgi_pass phpfpm;
+        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+        fastcgi_param PATH_INFO $fastcgi_script_name;
+        include fastcgi_params;
+    }
+    
+    # Cache expiration headers
+    location ~* \.(js|css|png|jpg|jpeg|gif|ico|ics|mov|mp3|mp4|mpg|mpeg|otf|pdf|ppt|svg|swf|tar|ttf|woff|xls|xlsx|zip)$ {
+        expires 30d;
+        log_not_found on;
+    }
+    
+    # pagespeed configuration
+    # Ensure requests for pagespeed optimized resources go to the pagespeed handler
+    # and no extraneous headers get set.
+    location ~ "\.pagespeed\.([a-z]\.)?[a-z]{2}\.[^.]{10}\.[^.]+" {
+      add_header "" "";
+    }
+    location ~ "^/pagespeed_static/" { }
+    location ~ "^/ngx_pagespeed_beacon$" { }
+
+    # Configure php-fpm status page
+    location ~ ^/(fpmstatus|ping)$ {
+        access_log on;
+        allow 127.0.0.1;
+        allow 192.168.0.0/16;
+        deny all;
+        include fastcgi_params;
+        fastcgi_pass 127.0.0.1:9000;
+    }
+
+    include conf.d/example_com_locations;
+}

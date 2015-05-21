@@ -1,0 +1,63 @@
+#
+# HTTPS release SSL  server
+#
+server  {
+    listen 443;
+    server_name {{ ansible_hostname }}.example.com;
+    root {{ document_root }};
+    index index.php index.html;
+    set_real_ip_from 10.30.0.0/16;
+
+    real_ip_header X-Forwarded-For;
+
+    client_max_body_size 256M;
+
+    error_page 501 502 505 /500.html;
+    error_page 500 /500.html;
+    error_page 503 /503.html;
+    error_page 504 /504.html;
+    error_page 400 /400.html;
+    error_page 401 /401.html;
+    error_page 403 /403.html;
+    error_page 404 /404.html;
+
+    access_log  {{ ssl_access_log }};
+    error_log   {{ ssl_error_log }};
+    
+    ssl on;
+    ssl_session_timeout  5m;
+
+    ssl_protocols  SSLv2 SSLv3 TLSv1;
+    ssl_ciphers  ALL:!ADH:!EXPORT56:RC4+RSA:+HIGH:+MEDIUM:+LOW:+SSLv2:+EXP;
+    ssl_prefer_server_ciphers   on;
+
+    ssl_certificate      /etc/pki/tls/certs/ca.crt;
+    ssl_certificate_key  /etc/pki/tls/private/ca.key;
+
+    proxy_set_header  X-Real-IP  $remote_addr;
+    proxy_set_header  X_FORWARDED_PROTO https;
+    proxy_set_header  X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header  Host $http_host;
+    proxy_set_header  X-Url-Scheme $scheme;
+    proxy_redirect    off;
+    proxy_max_temp_file_size 0;
+    
+    # Cache expiration headers
+    location ~* \.(js|css|png|jpg|jpeg|gif|ico|ics|mov|mp3|mp4|mpg|mpeg|otf|pdf|ppt|svg|swf|tar|ttf|woff|xls|xlsx|zip)$ {
+        expires 30d;
+        log_not_found on;
+    }
+    
+    # pagespeed configuration
+    # pagespeed https support
+    pagespeed FetchHttps enable,allow_self_signed;
+    # Ensure requests for pagespeed optimized resources go to the pagespeed handler
+    # and no extraneous headers get set.
+    location ~ "\.pagespeed\.([a-z]\.)?[a-z]{2}\.[^.]{10}\.[^.]+" {
+      add_header "" "";
+    }
+    location ~ "^/pagespeed_static/" { }
+    location ~ "^/ngx_pagespeed_beacon$" { }
+
+    include conf.d/example_com_locations;
+}

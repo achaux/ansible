@@ -1,0 +1,8 @@
+---
+# Turn on Ngix
+- name: "Start php-fpm"
+  service: name=php-fpm state=running enabled=yes
+
+- name: "Start Nginx"
+  service: name="nginx" state=started
+

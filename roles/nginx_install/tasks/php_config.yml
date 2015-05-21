@@ -1,0 +1,25 @@
+---
+# This will configure PHP for Nginx
+
+- name: "Create /var/log/php-fpm"
+  file: path="/var/log/php-fpm" mode=0755 owner=root group=root state=directory
+
+- name: "Create /var/log/php-fpm/error.log"
+  file: path="/var/log/php-fpm/error.log" mode=0644 owner=root group=root state=touch
+
+- name: "Copy php.ini"
+  copy: src="php.ini" dest="/etc/php.ini" mode="0644"
+
+- name: "Copy php-fpm.cnf"
+  copy: src="php-fpm.conf" dest="/etc/php-fpm.conf" mode="0644"
+
+- name: "Copy php-fpm to /etc/init.d"
+  copy: src="php-fpm.sh" dest="/etc/rc.d/init.d/php-fpm" mode="0755"
+
+- name: "Add php-fpm to chkconfig"
+  shell: "chkconfig --add php-fpm"
+
+- name: "Turn php-fpm on at boot"
+  shell: "chkconfig php-fpm on"
+
+

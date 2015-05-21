@@ -1,0 +1,44 @@
+---
+# This will configure the Nginx installation
+
+# Link nginx binary to compiled version
+- name: "Link Nginx binary to compiled version"
+  file: src="/usr/local/nginx/sbin/nginx" dest="/usr/sbin/nginx" state=link owner=root group=root
+
+# Add startup script for Nginx
+- name: "Copy Nginx startup script"
+  copy: src="nginx-init.d" dest="/etc/rc.d/init.d/nginx" owner=root group=root mode=0744
+
+- name: "Add nginx to chkconfig"
+  shell: "chkconfig --add nginx"
+
+- name: "Turn nginx on at boot"
+  shell: "chkconfig nginx on"
+
+- name: "Create /etc/nginx/conf.d"
+  file: path="/etc/nginx/conf.d" mode=0775 owner=root group=root state=directory
+
+# Copy static files
+- name: "Copy static Nginx configuration file"
+  copy: src="nginx" dest="/etc/" force=yes owner=root group=root
+
+# Copy templated files
+- name: "Copy nginx.conf configuration file from template"
+  template: src="nginx.conf.j2" dest="/etc/nginx/nginx.conf" owner=root group=root mode=0644
+
+- name: "Copy ssl.conf configuration file from template"
+  template: src="ssl.conf.j2" dest="/etc/nginx/conf.d/ssl.conf" owner=root group=root mode=0644
+
+- name: "Copy default.conf configuration file from template"
+  template: src="default.conf.j2" dest="/etc/nginx/conf.d/default.conf" owner=root group=root mode=0644
+
+- name: "Copy example_com_locations configuration file from template"
+  template: src="example_com_locations.j2" dest="/etc/nginx/conf.d/example_com_locations" owner=root group=root mode=0644
+
+- name: "Copy servername.conf configuration file from template"
+  template: src="servername.conf.j2" dest="/etc/nginx/conf.d/{{ ansible_hostname }}.conf" owner=root group=root mode=0644
+
+- name: "Copy servername_ssl.conf configuration file from template"
+  template: src="servername_ssl.conf.j2" dest="/etc/nginx/conf.d/{{ ansible_hostname }}_ssl.conf" owner=root group=root mode=0644
+
+

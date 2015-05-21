@@ -1,0 +1,46 @@
+---
+- name: "Update New Relic daemond"
+  yum: pkg={{item}} state=latest update_cache=yes
+  with_items:
+     - newrelic-daemon
+     - newrelic-sysmond
+     - nginx-nr-agent
+  notify: reboot server
+
+- name: "Set up New Relic Sysmond"
+  shell: "nrsysmond-config --set license_key={{ new_relic_license }}"
+  
+- name: "Stop newrelic sysmond"
+  service: name="newrelic-sysmond" state=stopped
+  ignore_errors: true
+
+- name: "Stop newrelic daemon"
+  service: name="newrelic-daemon" state=stopped
+  ignore_errors: true
+
+- name: "Start newrelic sysmond"
+  service: name="newrelic-sysmond" state=started
+
+- name: "Start newrelic daemon"
+  service: name="newrelic-daemon" state=started
+
+- name: "Stop nginx"
+  service: name="nginx" state=stopped
+  
+- name: "Pause for nginx to stop"
+  pause: seconds=5
+  
+- name: "Restart php-fpm"
+  service: name="php-fpm" state=restarted
+  
+- name: "Pause for php-fpm to restart"
+  pause: seconds=5
+  
+- name: "Start nginx"
+  service: name="nginx" state=started
+
+- name: "Stop httpd"
+  service: name="httpd" state=stopped
+  
+- name: "Start httpd"
+  service: name="httpd" state=started

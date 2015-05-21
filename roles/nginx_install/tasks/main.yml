@@ -1,0 +1,39 @@
+---
+- name: "Stop Nginx"
+  service: name="nginx" state=stopped
+  ignore_errors: yes
+  
+- name: "Stop php-fpm"
+  shell: "killall php-fpm"
+  ignore_errors: yes
+  
+- name: "Remove old PHP via Yum"
+  yum: pkg={{item}} state=absent
+  with_items:
+    - php
+    - php-cli
+    - php-common
+    - php-fpm
+    - php-gd
+    - php-mbstring
+    - php
+    - imap
+    - php-mysql
+    - php-odbc
+    - php-pdo
+    - php-pgsql
+    - php-process
+    - php-xml
+
+- name: "Make sure /etc/nginx exists"
+  file: path="/etc/nginx" mode=775 owner=nginx group=nginx state=directory
+
+- include: yum_install.yml
+- include: php_from_source.yml
+- include: php_config.yml
+- include: pagespeed_from_source.yml
+- include: modsecurity_from_source.yml
+- include: nginx_from_source.yml
+- include: nginx_config.yml
+- include: nginx_start.yml
+

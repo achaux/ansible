@@ -1,0 +1,15 @@
+---
+- name: "Copy deployment notification script"
+  copy: src="send_deployment_notification.sh" dest="/some/path/send_deployment_notification.sh" owner="someuser" group="someuser" mode="0744"
+  
+- name: "chmod 777 sites/default"
+  file: path="/some/path" owner="someuser" group="someuser" mode="0777"
+
+- name: "Update using git"
+  git: repo="git@bitbucket.org:account/repo" dest="/some/path" update=yes force=yes accept_hostkey=yes
+
+- name: "chmod 555 sites/default"
+  file: path="/some/path" owner="someuser" group="someuser" mode="0555"
+
+- name: "Send deployment notification to New Relic"
+  shell: "/some/path/send_deployment_notification.sh"

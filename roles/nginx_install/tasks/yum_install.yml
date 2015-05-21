@@ -1,0 +1,49 @@
+---
+# This will install Yum packages
+
+- name: "Install Yum packages needed for PHP, Nginx, Modsecurity and Pagespeed"
+  yum: pkg={{item}} state=present
+  with_items:
+    - at
+    - bzip2-devel.x86_64
+    - freetds
+    - freetds-devel
+    - gcc
+    - gcc-c++
+    - gd-devel
+    - geoip-devel
+    - gmp-devel.x86_64
+    - httpd-devel
+    - httpd-tools
+    - libc-client-devel
+    - libcurl-devel
+    - libevent-devel
+    - libmcrypt
+    - libmcrypt-devel
+    - libiodbc
+    - libiodbc-devel
+    - libtool-ltdl
+    - libtool-ltdl-devel
+    - libxml2-devel
+    - libxslt-devel
+    - make
+    - mysql
+    - mysql-connector-odbc
+    - mysql-devel
+    - mysql-libs
+    - openssl-devel
+    - pcre-devel
+    - perl
+    - perl-ExtUtils-Embed
+    - php-mbstring.x86_64
+    - rpm-build
+    - tzdata
+    - unixODBC
+    - unixODBC-devel
+    - unzip
+    - yum-utils
+    - zlib-devel
+  notify: "update rkhunter_propupd"
+
+- name: "Copy unixODBC header files to standard location"
+  shell: cp /usr/include/libiodbc/*.h /usr/local/include/

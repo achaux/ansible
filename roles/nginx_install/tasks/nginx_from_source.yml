@@ -1,0 +1,29 @@
+---
+# This will install Nginx from source
+
+- name: "Create /var/lib/nginx/tmp"
+  file: path="/var/lib/nginx/tmp" mode=0775 owner=nginx group=nginx state=directory
+
+- name: "Copy Nginx gz file and unpack: nginx-{{ nginx_version }}.tar.gz"
+  unarchive: src="nginx-{{ nginx_version }}.tar.gz" dest="/usr/local/nginx/" copy=yes
+
+- name: "Copy Nginx configuration file"
+  template: src="_NGINX_configure.sh.j2" dest="/usr/local/nginx/nginx-{{ nginx_version }}/_NGINX_configure.sh" owner=root group=root mode=0744
+
+- name: "Configure Nginx and compile"
+  shell: "cd /usr/local/nginx/nginx-{{ nginx_version }}/ ; ./_NGINX_configure.sh ; make && make install"
+
+# Make a backup of the old Nginx binary
+- stat: path="/usr/sbin/nginx"
+  register: nginx_binary
+- stat: path="/usr/sbin/nginx.OLD"
+  register: nginx_binary_backup
+- shell: "mv /usr/sbin/nginx /usr/sbin/nginx.OLD"
+  when: nginx_binary.stat.exists == True and nginx_binary_backup.stat.exists == False
+- stat: path="/usr/sbin/nginx"
+  register: nginx_binary
+- stat: path="/usr/sbin/nginx.OLD"
+  register: nginx_binary_backup
+- shell: "rm /usr/sbin/nginx"
+  when: nginx_binary.stat.exists == True and nginx_binary_backup.stat.exists == True
+

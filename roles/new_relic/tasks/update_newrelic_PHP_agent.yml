@@ -1,0 +1,33 @@
+---
+- name: "Update New Relic PHP Agent"
+  yum: pkg={{item}} state=latest update_cache=yes
+  with_items:
+     - newrelic-php5
+
+- name: "Set up New Relic Sysmond"
+  shell: "nrsysmond-config --set license_key={{ new_relic_license }}"
+  
+- name: "Stop newrelic sysmond"
+  service: name="newrelic-sysmond" state=stopped
+
+- name: "Stop newrelic daemon"
+  service: name="newrelic-daemon" state=stopped
+
+- name: "Start newrelic sysmond"
+  service: name="newrelic-sysmond" state=started
+
+- name: "Start newrelic daemon"
+  service: name="newrelic-daemon" state=started
+
+- name: "Stop nginx"
+  service: name="nginx" state=stopped
+  
+- name: "Stop php-fpm"
+  service: name="php-fpm" state=stopped
+  
+- name: "Start php-fpm"
+  service: name="php-fpm" state=started
+
+- name: "Start nginx"
+  service: name="nginx" state=started
+

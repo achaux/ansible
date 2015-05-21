@@ -1,0 +1,19 @@
+---
+- name: "
+### This playbook deploys the Nginx web server from source
+
+- Not included in this playbook are: 
+- NFS setup for shared assets
+- Pull of Drupal code from git
+- Create TSL certs for web server
+
+###
+"
+  hosts: deployto 
+  sudo: true
+
+# All tasks from these roles are executed.  Check tasks/main.yml for each role.
+  roles:
+    - common
+    - server_setup
+    - nginx_install
